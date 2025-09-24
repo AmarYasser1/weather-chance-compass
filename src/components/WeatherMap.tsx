@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import React, { useState, useEffect, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -16,38 +15,64 @@ interface WeatherMapProps {
   selectedLocation?: { lat: number; lon: number; name?: string };
 }
 
-interface MapClickHandlerProps {
-  onLocationSelect: (location: { lat: number; lon: number; name?: string }) => void;
-}
+const WeatherMap: React.FC<WeatherMapProps> = ({ onLocationSelect, selectedLocation }) => {
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
 
-function MapClickHandler({ onLocationSelect }: MapClickHandlerProps) {
-  useMapEvents({
-    click: (e) => {
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    // Initialize map
+    mapInstanceRef.current = L.map(mapRef.current).setView([20, 0], 2);
+
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(mapInstanceRef.current);
+
+    // Add click handler
+    mapInstanceRef.current.on('click', (e: L.LeafletMouseEvent) => {
       const { lat, lng } = e.latlng;
       onLocationSelect({ lat, lon: lng });
-    },
-  });
-  return null;
-}
+      
+      // Remove existing marker
+      if (markerRef.current) {
+        mapInstanceRef.current!.removeLayer(markerRef.current);
+      }
+      
+      // Add new marker
+      markerRef.current = L.marker([lat, lng]).addTo(mapInstanceRef.current!);
+    });
 
-const WeatherMap: React.FC<WeatherMapProps> = ({ onLocationSelect, selectedLocation }) => {
+    // Cleanup
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+      }
+    };
+  }, [onLocationSelect]);
+
+  // Update marker when selectedLocation changes
+  useEffect(() => {
+    if (!mapInstanceRef.current || !selectedLocation) return;
+
+    // Remove existing marker
+    if (markerRef.current) {
+      mapInstanceRef.current.removeLayer(markerRef.current);
+    }
+
+    // Add new marker
+    markerRef.current = L.marker([selectedLocation.lat, selectedLocation.lon])
+      .addTo(mapInstanceRef.current);
+
+    // Center map on location
+    mapInstanceRef.current.setView([selectedLocation.lat, selectedLocation.lon], 8);
+  }, [selectedLocation]);
+
   return (
     <div className="relative w-full h-[400px] rounded-lg overflow-hidden border">
-      <MapContainer
-        center={[20, 0]}
-        zoom={2}
-        style={{ height: '100%', width: '100%' }}
-        zoomControl={false}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <MapClickHandler onLocationSelect={onLocationSelect} />
-        {selectedLocation && (
-          <Marker position={[selectedLocation.lat, selectedLocation.lon]} />
-        )}
-      </MapContainer>
+      <div ref={mapRef} className="h-full w-full" />
       <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border z-[1000]">
         <p className="text-sm font-medium">Click on the map to select a location</p>
         {selectedLocation && (
