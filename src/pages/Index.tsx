@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import ProbabilityCard from '@/components/ProbabilityCard';
 import WeatherCharts from '@/components/WeatherCharts';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Download, Satellite, Database, ArrowLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -89,10 +90,13 @@ const Index = () => {
                 <p className="text-sm text-muted-foreground">Historical probability analysis complete</p>
               </div>
             </div>
-            <Badge variant="secondary" className="text-xs">
-              <Database className="h-3 w-3 mr-1" />
-              Historical Data: 1980-2025
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="text-xs">
+                <Database className="h-3 w-3 mr-1" />
+                Historical Data: 1980-2025
+              </Badge>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </header>

@@ -102,6 +102,21 @@ const LocationInput: React.FC<LocationInputProps> = ({
     setShowSuggestions(false);
   };
 
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (showSuggestions) {
+        const target = event.target as Element;
+        if (!target.closest('.search-container')) {
+          setShowSuggestions(false);
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showSuggestions]);
+
   const handleInputChange = (value: string) => {
     setCityName(value);
     if (!value.trim()) {
@@ -140,7 +155,7 @@ const LocationInput: React.FC<LocationInputProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* City Search */}
-          <div className="space-y-2 relative">
+          <div className="space-y-2 relative search-container">
             <Label htmlFor="city" className="text-sm font-medium">City Name</Label>
             <div className="relative">
               <Input

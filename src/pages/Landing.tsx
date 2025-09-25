@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import WeatherMap from '@/components/WeatherMap';
 import LocationInput from '@/components/LocationInput';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Satellite, Database, Info, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -100,10 +101,13 @@ const Landing = () => {
                 <p className="text-sm text-muted-foreground">Historical weather probability prediction</p>
               </div>
             </div>
-            <Badge variant="secondary" className="text-xs">
-              <Database className="h-3 w-3 mr-1" />
-              Historical Data: 1980-2025
-            </Badge>
+            <div className="flex items-center gap-3">
+              <Badge variant="secondary" className="text-xs">
+                <Database className="h-3 w-3 mr-1" />
+                Historical Data: 1980-2025
+              </Badge>
+              <ThemeToggle />
+            </div>
           </div>
         </div>
       </header>

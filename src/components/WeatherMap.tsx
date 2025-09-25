@@ -66,8 +66,11 @@ const WeatherMap: React.FC<WeatherMapProps> = ({ onLocationSelect, selectedLocat
     markerRef.current = L.marker([selectedLocation.lat, selectedLocation.lon])
       .addTo(mapInstanceRef.current);
 
-    // Center map on location
-    mapInstanceRef.current.setView([selectedLocation.lat, selectedLocation.lon], 8);
+    // Center map on location smoothly without resetting
+    mapInstanceRef.current.setView([selectedLocation.lat, selectedLocation.lon], 8, {
+      animate: true,
+      duration: 1
+    });
   }, [selectedLocation]);
 
   return (
