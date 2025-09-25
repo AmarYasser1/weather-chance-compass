@@ -28,18 +28,36 @@ const LocationInput: React.FC<LocationInputProps> = ({
   const handleCitySearch = async () => {
     if (!cityName.trim()) return;
     
-    // Mock geocoding - in real app would use a geocoding service
+    // Enhanced mock geocoding - in real app would use a geocoding service
     const mockLocations: { [key: string]: { lat: number; lon: number } } = {
       'cairo': { lat: 30.0444, lon: 31.2357 },
       'new york': { lat: 40.7128, lon: -74.0060 },
       'london': { lat: 51.5074, lon: -0.1278 },
       'tokyo': { lat: 35.6762, lon: 139.6503 },
       'sydney': { lat: -33.8688, lon: 151.2093 },
+      'paris': { lat: 48.8566, lon: 2.3522 },
+      'berlin': { lat: 52.5200, lon: 13.4050 },
+      'los angeles': { lat: 34.0522, lon: -118.2437 },
+      'moscow': { lat: 55.7558, lon: 37.6176 },
+      'mumbai': { lat: 19.0760, lon: 72.8777 },
+      'beijing': { lat: 39.9042, lon: 116.4074 },
+      'rio de janeiro': { lat: -22.9068, lon: -43.1729 },
+      'cape town': { lat: -33.9249, lon: 18.4241 },
     };
     
-    const location = mockLocations[cityName.toLowerCase()];
-    if (location) {
-      onLocationSubmit({ ...location, name: cityName });
+    // Find city by partial match (case insensitive)
+    const searchTerm = cityName.toLowerCase().trim();
+    const matchedCity = Object.keys(mockLocations).find(city => 
+      city.toLowerCase().includes(searchTerm) || searchTerm.includes(city.toLowerCase())
+    );
+    
+    if (matchedCity) {
+      const location = mockLocations[matchedCity];
+      const properName = matchedCity.split(' ').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(' ');
+      onLocationSubmit({ ...location, name: properName });
+      setCityName('');
     }
   };
 
@@ -79,15 +97,19 @@ const LocationInput: React.FC<LocationInputProps> = ({
             <div className="flex gap-2">
               <Input
                 id="city"
-                placeholder="e.g., Cairo, New York, London"
+                placeholder="e.g., Cairo, New York, London, Paris..."
                 value={cityName}
                 onChange={(e) => setCityName(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleCitySearch()}
               />
               <Button onClick={handleCitySearch} disabled={!cityName.trim()}>
-                <Search className="h-4 w-4" />
+                <Search className="h-4 w-4 mr-1" />
+                Search
               </Button>
             </div>
+            <p className="text-xs text-muted-foreground">
+              Search integrates with the interactive map • Click map or search by city
+            </p>
           </div>
           
           {/* Coordinate Input */}
