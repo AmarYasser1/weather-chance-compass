@@ -1,15 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { MapPin, Search, Calendar } from 'lucide-react';
+import { MapPin, Search, Calendar, Loader2 } from 'lucide-react';
 
 interface LocationInputProps {
   onLocationSubmit: (location: { lat: number; lon: number; name?: string }) => void;
   onDateSubmit: (date: string, timeWindow?: { days_before: number; days_after: number }) => void;
   selectedLocation?: { lat: number; lon: number; name?: string };
   selectedDate?: string;
+}
+
+interface SearchResult {
+  place_id: number;
+  display_name: string;
+  lat: string;
+  lon: string;
+  name: string;
 }
 
 const LocationInput: React.FC<LocationInputProps> = ({
@@ -24,40 +32,80 @@ const LocationInput: React.FC<LocationInputProps> = ({
   const [date, setDate] = useState(selectedDate || '');
   const [daysBefore, setDaysBefore] = useState('3');
   const [daysAfter, setDaysAfter] = useState('3');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const handleCitySearch = async () => {
-    if (!cityName.trim()) return;
-    
-    // Enhanced mock geocoding - in real app would use a geocoding service
-    const mockLocations: { [key: string]: { lat: number; lon: number } } = {
-      'cairo': { lat: 30.0444, lon: 31.2357 },
-      'new york': { lat: 40.7128, lon: -74.0060 },
-      'london': { lat: 51.5074, lon: -0.1278 },
-      'tokyo': { lat: 35.6762, lon: 139.6503 },
-      'sydney': { lat: -33.8688, lon: 151.2093 },
-      'paris': { lat: 48.8566, lon: 2.3522 },
-      'berlin': { lat: 52.5200, lon: 13.4050 },
-      'los angeles': { lat: 34.0522, lon: -118.2437 },
-      'moscow': { lat: 55.7558, lon: 37.6176 },
-      'mumbai': { lat: 19.0760, lon: 72.8777 },
-      'beijing': { lat: 39.9042, lon: 116.4074 },
-      'rio de janeiro': { lat: -22.9068, lon: -43.1729 },
-      'cape town': { lat: -33.9249, lon: 18.4241 },
+  // Debounced search function
+  const debounce = useCallback((func: Function, wait: number) => {
+    let timeout: NodeJS.Timeout;
+    return function executedFunction(...args: any[]) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
     };
-    
-    // Find city by partial match (case insensitive)
-    const searchTerm = cityName.toLowerCase().trim();
-    const matchedCity = Object.keys(mockLocations).find(city => 
-      city.toLowerCase().includes(searchTerm) || searchTerm.includes(city.toLowerCase())
-    );
-    
-    if (matchedCity) {
-      const location = mockLocations[matchedCity];
-      const properName = matchedCity.split(' ').map(word => 
-        word.charAt(0).toUpperCase() + word.slice(1)
-      ).join(' ');
-      onLocationSubmit({ ...location, name: properName });
-      setCityName('');
+  }, []);
+
+  const searchCities = async (query: string) => {
+    if (!query.trim() || query.length < 2) {
+      setSearchResults([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    setIsSearching(true);
+    try {
+      // Using Nominatim (OpenStreetMap) geocoding API - free and no API key required
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1&countrycodes=&featuretype=city`
+      );
+      
+      if (!response.ok) throw new Error('Search failed');
+      
+      const data = await response.json();
+      const results: SearchResult[] = data.map((item: any) => ({
+        place_id: item.place_id,
+        display_name: item.display_name,
+        lat: item.lat,
+        lon: item.lon,
+        name: item.name || item.display_name.split(',')[0]
+      }));
+      
+      setSearchResults(results);
+      setShowSuggestions(results.length > 0);
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      setSearchResults([]);
+      setShowSuggestions(false);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const debouncedSearch = useCallback(debounce(searchCities, 300), []);
+
+  useEffect(() => {
+    debouncedSearch(cityName);
+  }, [cityName, debouncedSearch]);
+
+  const handleCitySelect = (result: SearchResult) => {
+    const location = {
+      lat: parseFloat(result.lat),
+      lon: parseFloat(result.lon),
+      name: result.name
+    };
+    onLocationSubmit(location);
+    setCityName(result.name);
+    setShowSuggestions(false);
+  };
+
+  const handleInputChange = (value: string) => {
+    setCityName(value);
+    if (!value.trim()) {
+      setShowSuggestions(false);
     }
   };
 
@@ -92,23 +140,41 @@ const LocationInput: React.FC<LocationInputProps> = ({
         </CardHeader>
         <CardContent className="space-y-4">
           {/* City Search */}
-          <div className="space-y-2">
+          <div className="space-y-2 relative">
             <Label htmlFor="city" className="text-sm font-medium">City Name</Label>
-            <div className="flex gap-2">
+            <div className="relative">
               <Input
                 id="city"
-                placeholder="e.g., Cairo, New York, London, Paris..."
+                placeholder="Start typing a city name..."
                 value={cityName}
-                onChange={(e) => setCityName(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleCitySearch()}
+                onChange={(e) => handleInputChange(e.target.value)}
+                onFocus={() => setShowSuggestions(searchResults.length > 0)}
+                className="pr-10"
               />
-              <Button onClick={handleCitySearch} disabled={!cityName.trim()}>
-                <Search className="h-4 w-4 mr-1" />
-                Search
-              </Button>
+              {isSearching && (
+                <Loader2 className="h-4 w-4 absolute right-3 top-1/2 transform -translate-y-1/2 animate-spin text-muted-foreground" />
+              )}
+              
+              {/* Search Suggestions Dropdown */}
+              {showSuggestions && searchResults.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-background border rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                  {searchResults.map((result) => (
+                    <button
+                      key={result.place_id}
+                      className="w-full text-left px-3 py-2 hover:bg-accent hover:text-accent-foreground border-b border-border last:border-b-0 transition-colors"
+                      onClick={() => handleCitySelect(result)}
+                    >
+                      <div className="font-medium">{result.name}</div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {result.display_name}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <p className="text-xs text-muted-foreground">
-              Search integrates with the interactive map • Click map or search by city
+              Real-time search integrates with interactive map • Click map or search by city
             </p>
           </div>
           
