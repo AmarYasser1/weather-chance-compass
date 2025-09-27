@@ -1,15 +1,14 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import ProbabilityCard from '@/components/ProbabilityCard';
 import WeatherCharts from '@/components/WeatherCharts';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { Download, Satellite, Database, ArrowLeft } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import Header from '@/components/Header';
 
 interface Location {
   lat: number;
@@ -54,10 +53,6 @@ const Index = () => {
     uncomfortable: 0.45,
   };
 
-  const handleBackToLanding = () => {
-    navigate('/');
-  };
-
   const handleDownload = (format: 'csv' | 'json') => {
     // Mock download functionality
     toast({
@@ -69,62 +64,32 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <Toaster />
-      
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBackToLanding}
-                className="mr-2"
-              >
-                <ArrowLeft className="h-4 w-4 mr-1" />
-                Back
-              </Button>
-              <Satellite className="h-8 w-8 text-primary" />
-              <div>
-                <h1 className="text-xl font-bold">Weather Analysis Results</h1>
-                <p className="text-sm text-muted-foreground">Historical probability analysis complete</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="text-xs">
-                <Database className="h-3 w-3 mr-1" />
-                Historical Data: 1980-2025
-              </Badge>
-              
-              {/* Export Options */}
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleDownload('csv')}
-                  className="h-8 px-3"
-                >
-                  <Download className="h-3 w-3 mr-1" />
-                  CSV
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => handleDownload('json')}
-                  className="h-8 px-3"
-                >
-                  <Download className="h-3 w-3 mr-1" />
-                  JSON
-                </Button>
-              </div>
-              
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       <main className="container mx-auto px-4 py-6">
+        <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold">Analysis Results</h1>
+            <div className="flex gap-2">
+                <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => handleDownload('csv')}
+                className="h-8 px-3"
+                >
+                <Download className="h-3 w-3 mr-1" />
+                CSV
+                </Button>
+                <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => handleDownload('json')}
+                className="h-8 px-3"
+                >
+                <Download className="h-3 w-3 mr-1" />
+                JSON
+                </Button>
+            </div>
+        </div>
         <div className="space-y-6">
           {/* Analysis Summary */}
           <Card className="bg-gradient-to-r from-card/50 to-card/30 border-2">

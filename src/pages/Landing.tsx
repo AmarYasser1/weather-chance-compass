@@ -1,10 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Toaster } from "@/components/ui/toaster";
-import { Badge } from '@/components/ui/badge';
 import MultistepForm from '@/components/MultistepForm';
-import { ThemeToggle } from '@/components/ThemeToggle';
-import { Satellite, Database } from 'lucide-react';
+import Header from '@/components/Header';
 
 interface Location {
   lat: number;
@@ -43,29 +41,7 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-background">
       <Toaster />
-      
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Satellite className="h-8 w-8 text-primary" />
-              <div>
-                <h1 className="text-xl font-bold">NASA MERRA-2 Weather Analysis</h1>
-                <p className="text-sm text-muted-foreground">Historical weather probability prediction</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="text-xs">
-                <Database className="h-3 w-3 mr-1" />
-                Historical Data: 1980-2025
-              </Badge>
-              <ThemeToggle />
-            </div>
-          </div>
-        </div>
-      </header>
-
+      <Header />
       <main className="container mx-auto px-4 py-8">
         <MultistepForm onAnalyze={handleAnalyze} />
       </main>
