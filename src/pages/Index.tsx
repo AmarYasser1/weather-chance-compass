@@ -95,6 +95,29 @@ const Index = () => {
                 <Database className="h-3 w-3 mr-1" />
                 Historical Data: 1980-2025
               </Badge>
+              
+              {/* Export Options */}
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleDownload('csv')}
+                  className="h-8 px-3"
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  CSV
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => handleDownload('json')}
+                  className="h-8 px-3"
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  JSON
+                </Button>
+              </div>
+              
               <ThemeToggle />
             </div>
           </div>
@@ -102,67 +125,38 @@ const Index = () => {
       </header>
 
       <main className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left Column - Export & Analysis Summary */}
-          <div className="lg:col-span-1 space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Analysis Summary</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <p className="text-sm">
-                    <strong>Location:</strong> {selectedLocation?.name || 'Custom Location'} 
+        <div className="space-y-6">
+          {/* Analysis Summary */}
+          <Card className="bg-gradient-to-r from-card/50 to-card/30 border-2">
+            <CardContent className="pt-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Location</p>
+                  <p className="font-semibold">{selectedLocation?.name || 'Custom Location'}</p>
+                  <p className="text-xs text-muted-foreground">
                     ({selectedLocation?.lat.toFixed(4)}, {selectedLocation?.lon.toFixed(4)})
                   </p>
-                  <p className="text-sm">
-                    <strong>Target Date:</strong> {analysisConfig?.date}
-                    {analysisConfig?.timeWindow && (
-                      <span> (±{analysisConfig.timeWindow.days_before}-{analysisConfig.timeWindow.days_after} days)</span>
-                    )}
-                  </p>
-                  <p className="text-sm">
-                    <strong>Historical Period:</strong> 1980-2025 (45 years of data)
-                  </p>
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Download className="h-4 w-4" />
-                  Export Data
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Download the historical data subset and analysis metadata
-                </p>
-                <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleDownload('csv')}
-                    className="flex-1"
-                  >
-                    CSV
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => handleDownload('json')}
-                    className="flex-1"
-                  >
-                    JSON
-                  </Button>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Target Date</p>
+                  <p className="font-semibold">{analysisConfig?.date}</p>
+                  {analysisConfig?.timeWindow && (
+                    <p className="text-xs text-muted-foreground">
+                      ±{analysisConfig.timeWindow.days_before}-{analysisConfig.timeWindow.days_after} days
+                    </p>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">Historical Period</p>
+                  <p className="font-semibold">1980-2025</p>
+                  <p className="text-xs text-muted-foreground">45 years of data</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
-          {/* Right Column - Results */}
-          <div className="lg:col-span-3 space-y-6">
+          {/* Results */}
+          <div className="space-y-6">
             {/* Probability Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               <ProbabilityCard
