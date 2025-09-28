@@ -76,15 +76,7 @@ const WeatherMap: React.FC<WeatherMapProps> = ({ onLocationSelect, selectedLocat
   return (
     <div className="relative w-full h-[400px] rounded-lg overflow-hidden border">
       <div ref={mapRef} className="h-full w-full" />
-      <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border z-[1000]">
-        <p className="text-sm font-medium">Click on the map to select a location</p>
-        {selectedLocation && (
-          <p className="text-xs text-muted-foreground mt-1">
-            {selectedLocation.lat.toFixed(4)}, {selectedLocation.lon.toFixed(4)}
-            {selectedLocation.name && ` • ${selectedLocation.name}`}
-          </p>
-        )}
-      </div>
+
     </div>
   );
 };

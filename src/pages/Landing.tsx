@@ -51,22 +51,18 @@ const Landing = () => {
             <div className="flex items-center gap-3">
               <Satellite className="h-8 w-8 text-primary" />
               <div>
-                <h1 className="text-xl font-bold">NASA MERRA-2 Weather Analysis</h1>
-                <p className="text-sm text-muted-foreground">Historical weather probability prediction</p>
+                <h1 className="text-xl font-bold">Skyra</h1>
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Badge variant="secondary" className="text-xs">
-                <Database className="h-3 w-3 mr-1" />
-                Historical Data: 1980-2025
-              </Badge>
+       
               <ThemeToggle />
             </div>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container  py-6">
         <MultistepForm onAnalyze={handleAnalyze} />
       </main>
     </div>

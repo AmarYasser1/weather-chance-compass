@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Calendar, Clock, CheckCircle } from 'lucide-react';
 import { DatePicker } from '@/components/DatePicker';
-
+import { useLocation, useNavigate } from 'react-router-dom';
+import { toast, useToast } from '../ui/use-toast';
 interface AnalysisConfig {
   date: string;
   timeWindow?: { days_before: number; days_after: number };
@@ -16,6 +17,7 @@ interface DateStepProps {
   selectedDate?: string;
   selectedTimeWindow?: { days_before: number; days_after: number };
 }
+  
 
 const DateStep: React.FC<DateStepProps> = ({
   onDateSubmit,
@@ -25,11 +27,46 @@ const DateStep: React.FC<DateStepProps> = ({
   const [date, setDate] = useState<Date | undefined>(selectedDate ? new Date(selectedDate) : undefined);
   const [daysBefore, setDaysBefore] = useState(selectedTimeWindow?.days_before?.toString() || '3');
   const [daysAfter, setDaysAfter] = useState(selectedTimeWindow?.days_after?.toString() || '3');
-  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  useEffect(() => {
-    setIsSubmitted(!!selectedDate);
-  }, [selectedDate]);
+  // When user picks a date we want to mark the step as ready immediately:
+  const handleDateChange = (selected?: Date) => {
+    setDate(selected);
+    if (selected) {
+      const config: AnalysisConfig = {
+        date: selected.toISOString().split('T')[0],
+        timeWindow: {
+          days_before: parseInt(daysBefore) || 0,
+          days_after: parseInt(daysAfter) || 0,
+        },
+      };
+      // notify parent that date is selected (step ready)
+      onDateSubmit(config);
+      // show a confirmation toast with the chosen date/window
+      submittoast(selected.toISOString(), daysBefore, daysAfter);
+    }
+  };
+
+
+  const submittoast = (
+    targetDate?: string,
+    before?: string,
+    after?: string
+  ) => {
+    const description =   (
+      <div className="text-sm">
+        <div>Target Date: {new Date(targetDate).toLocaleDateString()}</div>
+        <div>Analysis Window: {before || '0'} days before, {after || '0'} days after</div>
+      </div>
+    );
+
+    toast({
+      title: 'Date & Time Window Set',
+      description,
+      icon: <CheckCircle className="h-5 w-5 text-green-500" />,
+    });
+  };
+
+
 
   const handleSubmit = () => {
     if (date) {
@@ -41,7 +78,7 @@ const DateStep: React.FC<DateStepProps> = ({
         }
       };
       onDateSubmit(config);
-      setIsSubmitted(true);
+      submittoast( date?.toISOString(), daysBefore, daysAfter);
     }
   };
 
@@ -51,9 +88,23 @@ const DateStep: React.FC<DateStepProps> = ({
     return before + after + 1; // +1 for the target date itself
   };
 
+  // Compute start/end dates for display
+  const computeWindow = (d?: Date) => {
+    if (!d) return { start: null as Date | null, end: null as Date | null };
+    const before = parseInt(daysBefore) || 0;
+    const after = parseInt(daysAfter) || 0;
+    const start = new Date(d);
+    start.setDate(d.getDate() - before);
+    const end = new Date(d);
+    end.setDate(d.getDate() + after);
+    return { start, end };
+  };
+
+  const window = computeWindow(date);
+
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+    <div className=" space-y-6">
+      <Card >
         <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 border-b border-border/50">
           <CardTitle className="flex items-center gap-2 text-card-foreground">
             <Calendar className="h-5 w-5 text-primary" />
@@ -67,7 +118,7 @@ const DateStep: React.FC<DateStepProps> = ({
             </Label>
             <DatePicker
               date={date}
-              onDateChange={setDate}
+              onDateChange={handleDateChange}
               placeholder="Choose any date to analyze"
               className="text-lg"
             />
@@ -78,10 +129,10 @@ const DateStep: React.FC<DateStepProps> = ({
         </CardContent>
       </Card>
 
-      <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+      <Card className=" backdrop-blur-sm border-border/50">
         <CardHeader className="bg-gradient-to-r from-accent/10 to-primary/10 border-b border-border/50">
           <CardTitle className="flex items-center gap-2 text-card-foreground">
-            <Clock className="h-5 w-5 text-accent" />
+            <Clock className="h-5 w-5 text-primary" />
             Analysis Time Window
           </CardTitle>
         </CardHeader>
@@ -98,13 +149,12 @@ const DateStep: React.FC<DateStepProps> = ({
                 </Label>
                 <Input
                   id="daysBefore"
-                  placeholder="3"
                   value={daysBefore}
                   onChange={(e) => setDaysBefore(e.target.value)}
                   type="number"
                   min="0"
                   max="30"
-                  className="text-center bg-input/50 border-border/50 focus:bg-input focus:border-border"
+                  className="text-center   "
                 />
               </div>
               
@@ -119,13 +169,13 @@ const DateStep: React.FC<DateStepProps> = ({
                 </Label>
                 <Input
                   id="daysAfter"
-                  placeholder="3"
+                  
                   value={daysAfter}
                   onChange={(e) => setDaysAfter(e.target.value)}
                   type="number"
                   min="0"
                   max="30"
-                  className="text-center bg-input/50 border-border/50 focus:bg-input focus:border-border"
+                  className="text-center "
                 />
               </div>
             </div>
@@ -137,13 +187,19 @@ const DateStep: React.FC<DateStepProps> = ({
               <p className="text-xs text-muted-foreground">
                 We'll analyze weather patterns across this entire period
               </p>
+              {window.start && window.end && (
+                <div className="mt-2 text-xs text-muted-foreground">
+                  <div>From: <span className="font-medium text-card-foreground">{window.start.toLocaleDateString()}</span> (day {window.start.getDate()})</div>
+                  <div>To: <span className="font-medium text-card-foreground">{window.end.toLocaleDateString()}</span> (day {window.end.getDate()})</div>
+                </div>
+              )}
             </div>
           </div>
 
           <Button 
             onClick={handleSubmit} 
             disabled={!date} 
-            className="w-full bg-primary/90 hover:bg-primary text-primary-foreground"
+            className="w-full bg-primary text-primary-foreground"
             size="lg"
           >
             Set Date & Time Window
@@ -151,25 +207,7 @@ const DateStep: React.FC<DateStepProps> = ({
         </CardContent>
       </Card>
 
-      {/* Confirmation Display */}
-      {isSubmitted && (
-        <Card className="border-primary/30 bg-gradient-to-br from-primary/10 to-transparent backdrop-blur-sm">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-3">
-              <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
-              <div className="space-y-1">
-                <p className="font-medium text-card-foreground">Date & Time Window Set</p>
-                <p className="text-sm text-muted-foreground">
-                  Target Date: {date?.toLocaleDateString()}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Analysis Window: {daysBefore} days before, {daysAfter} days after
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+
     </div>
   );
 };

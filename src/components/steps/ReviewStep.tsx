@@ -36,7 +36,7 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
   const isReady = selectedLocation && analysisConfig;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div>
       {/* Summary Card */}
       <Card>
         <CardHeader>
@@ -93,88 +93,10 @@ const ReviewStep: React.FC<ReviewStepProps> = ({
       </Card>
 
       {/* About Analysis Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Info className="h-4 w-4" />
-            About This Analysis
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">
-            This analysis uses NASA MERRA-2 reanalysis data to compute historical weather 
-            probabilities for your selected location and date.
-          </p>
-          
-          <div className="grid grid-cols-2 gap-4 text-xs">
-            <div className="space-y-1">
-              <p className="font-medium">Data Source</p>
-              <p className="text-muted-foreground">NASA GES DISC MERRA-2</p>
-            </div>
-            <div className="space-y-1">
-              <p className="font-medium">Time Range</p>
-              <p className="text-muted-foreground">1980-present</p>
-            </div>
-            <div className="space-y-1">
-              <p className="font-medium">Resolution</p>
-              <p className="text-muted-foreground">~50km spatial</p>
-            </div>
-            <div className="space-y-1">
-              <p className="font-medium">Variables</p>
-              <p className="text-muted-foreground">T2M, PRECTOT, U10M, V10M, QV2M</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 pt-2">
-            <Database className="h-4 w-4 text-primary" />
-            <Badge variant="outline" className="text-xs">
-              Historical Data: 1980-2025
-            </Badge>
-          </div>
-        </CardContent>
-      </Card>
+ 
 
       {/* Action Card */}
-      <Card className={`${isReady 
-        ? 'border-primary/20 bg-gradient-to-br from-primary/5 to-transparent' 
-        : 'border-destructive/20 bg-gradient-to-br from-destructive/5 to-transparent'
-      }`}>
-        <CardContent className="pt-6">
-          <div className="text-center space-y-4">
-            {isReady ? (
-              <>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold">Ready for Analysis!</h3>
-                  <p className="text-sm text-muted-foreground">
-                    All information has been provided. Click below to analyze weather probabilities 
-                    using NASA MERRA-2 historical data.
-                  </p>
-                </div>
-                <Button 
-                  onClick={onAnalyze}
-                  size="lg"
-                  className="px-8"
-                >
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Analyze Weather Probabilities
-                </Button>
-              </>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <h3 className="text-lg font-semibold text-destructive">Missing Information</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Please complete all previous steps before proceeding with the analysis.
-                  </p>
-                </div>
-                <Button disabled size="lg" variant="outline">
-                  Complete Previous Steps
-                </Button>
-              </>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+     
     </div>
   );
 };

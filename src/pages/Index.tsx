@@ -36,12 +36,14 @@ const Index = () => {
 
   // Get data from navigation state, redirect if no data
   const { selectedLocation, analysisConfig } = location.state || {};
-  
-  if (!selectedLocation || !analysisConfig) {
-    // Redirect to landing if no data
-    React.useEffect(() => {
+
+  React.useEffect(() => {
+    if (!selectedLocation || !analysisConfig) {
       navigate('/');
-    }, [navigate]);
+    }
+  }, [navigate, selectedLocation, analysisConfig]);
+
+  if (!selectedLocation || !analysisConfig) {
     return null;
   }
 
@@ -64,6 +66,7 @@ const Index = () => {
       title: "Download Started",
       description: `Downloading analysis results as ${format.toUpperCase()}`,
     });
+    
   };
 
   return (

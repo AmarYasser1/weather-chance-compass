@@ -63,12 +63,13 @@ const WeatherCharts: React.FC<WeatherChartsProps> = ({
     { year: 2025, probability: 0.68 },
   ];
 
+  // Colors aligned with reference screenshot (green, purple, pink, blue, gray)
   const mockRiskData = riskData.length > 0 ? riskData : [
-    { category: 'Very Hot', probability: 62, color: 'hsl(var(--chart-pink))' },
-    { category: 'Uncomfortable', probability: 45, color: 'hsl(var(--chart-purple))' },
-    { category: 'Very Wet', probability: 12, color: 'hsl(var(--chart-blue))' },
-    { category: 'Very Windy', probability: 8, color: 'hsl(var(--chart-green))' },
-    { category: 'Very Cold', probability: 1, color: 'hsl(var(--chart-gray))' },
+    { category: 'Very Hot', probability: 62, color: '#f9a8d4' }, // pink
+    { category: 'Uncomfortable', probability: 45, color: '#8b5cf6' }, // purple
+    { category: 'Very Wet', probability: 12, color: '#60a5fa' }, // blue
+    { category: 'Very Windy', probability: 8, color: '#22c55e' }, // green
+    { category: 'Very Cold', probability: 1, color: '#9ca3af' }, // gray
   ];
 
   const chartConfig = {
@@ -97,7 +98,7 @@ const WeatherCharts: React.FC<WeatherChartsProps> = ({
   return (
     <div className="space-y-6">
       {/* Time Series Chart - Full Width */}
-      <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border/50">
+  <Card className="overflow-hidden bg-card/50 backdrop-blur-sm border-border/50 min-h-0">
         <CardHeader className="bg-gradient-to-r from-chart-green/10 to-chart-purple/10 border-b border-border/50">
           <CardTitle className="flex items-center gap-2 text-card-foreground">
             <Activity className="h-5 w-5 text-chart-green" />
@@ -106,51 +107,67 @@ const WeatherCharts: React.FC<WeatherChartsProps> = ({
         </CardHeader>
         <CardContent className="p-6">
           <ChartContainer config={chartConfig}>
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={mockTimeSeriesData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <ResponsiveContainer width="100%" height={320}>
+              {/* Converted to AreaChart to match design (layered green + purple waves) */}
+              <AreaChart data={mockTimeSeriesData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <defs>
+                  <linearGradient id="temperatureGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--series-green-start, #22c55e)" stopOpacity={0.55} />
+                    <stop offset="95%" stopColor="var(--series-green-end, #14532d)" stopOpacity={0.05} />
+                  </linearGradient>
+                  <linearGradient id="precipitationGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--series-purple-start, #8b5cf6)" stopOpacity={0.45} />
+                    <stop offset="95%" stopColor="var(--series-purple-end, #4c1d95)" stopOpacity={0.05} />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" className="opacity-30" />
-                <XAxis 
-                  dataKey="year" 
-                  className="text-xs fill-muted-foreground" 
+                <XAxis
+                  dataKey="year"
+                  className="text-xs fill-muted-foreground"
                   tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                   axisLine={{ stroke: 'hsl(var(--border))' }}
                   tickLine={{ stroke: 'hsl(var(--border))' }}
                 />
-                <YAxis 
-                  className="text-xs fill-muted-foreground" 
+                <YAxis
+                  className="text-xs fill-muted-foreground"
                   tick={{ fontSize: 12, fill: 'hsl(var(--muted-foreground))' }}
                   axisLine={{ stroke: 'hsl(var(--border))' }}
                   tickLine={{ stroke: 'hsl(var(--border))' }}
                 />
                 <ChartTooltip content={<ChartTooltipContent />} />
-                <Line 
-                  type="monotone" 
-                  dataKey="temperature" 
-                  stroke="hsl(var(--chart-pink))" 
-                  strokeWidth={3}
-                  dot={{ fill: 'hsl(var(--chart-pink))', strokeWidth: 2, r: 5 }}
-                  activeDot={{ r: 7, stroke: 'hsl(var(--chart-pink))', strokeWidth: 2, fill: 'hsl(var(--background))' }}
+                <Area
+                  data-testid="area-temperature"
+                  type="monotone"
+                  dataKey="temperature"
+                  stroke="#22c55e"
+                  fill="url(#temperatureGradient)"
+                  strokeWidth={2.5}
+                  dot={{ fill: '#22c55e', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#22c55e', strokeWidth: 2, fill: 'hsl(var(--background))' }}
                   name="Temperature"
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="precipitation" 
-                  stroke="hsl(var(--chart-blue))" 
-                  strokeWidth={3}
-                  dot={{ fill: 'hsl(var(--chart-blue))', strokeWidth: 2, r: 5 }}
-                  activeDot={{ r: 7, stroke: 'hsl(var(--chart-blue))', strokeWidth: 2, fill: 'hsl(var(--background))' }}
+                <Area
+                  data-testid="area-precipitation"
+                  type="monotone"
+                  dataKey="precipitation"
+                  stroke="#8b5cf6"
+                  fill="url(#precipitationGradient)"
+                  strokeWidth={2.5}
+                  dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: '#8b5cf6', strokeWidth: 2, fill: 'hsl(var(--background))' }}
                   name="Precipitation"
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="wind" 
-                  stroke="hsl(var(--chart-green))" 
-                  strokeWidth={3}
-                  dot={{ fill: 'hsl(var(--chart-green))', strokeWidth: 2, r: 5 }}
-                  activeDot={{ r: 7, stroke: 'hsl(var(--chart-green))', strokeWidth: 2, fill: 'hsl(var(--background))' }}
+                <Line
+                  data-testid="line-wind"
+                  type="monotone"
+                  dataKey="wind"
+                  stroke="hsl(var(--chart-green))"
+                  strokeWidth={2.5}
+                  dot={{ fill: 'hsl(var(--chart-green))', strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: 'hsl(var(--chart-green))', strokeWidth: 2, fill: 'hsl(var(--background))' }}
                   name="Wind Speed"
                 />
-              </LineChart>
+              </AreaChart>
             </ResponsiveContainer>
           </ChartContainer>
           <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground">
@@ -173,7 +190,7 @@ const WeatherCharts: React.FC<WeatherChartsProps> = ({
           </CardHeader>
           <CardContent className="p-6">
             <ChartContainer config={chartConfig}>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={mockHistogramData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" className="opacity-30" />
                   <XAxis 
@@ -192,13 +209,14 @@ const WeatherCharts: React.FC<WeatherChartsProps> = ({
                   <ChartTooltip content={<ChartTooltipContent />} />
                   <Bar 
                     dataKey="count" 
-                    radius={[8, 8, 0, 0]}
+                    radius={[6, 6, 0, 0]}
                     name="Days"
+                    data-testid="bar-distribution"
                   >
                     {mockHistogramData.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={entry.threshold ? 'hsl(var(--chart-pink))' : 'hsl(var(--chart-green))'}
+                        fill={entry.threshold ? '#f9a8d4' : '#8b5cf6'}
                         className="transition-all duration-300 hover:opacity-80"
                       />
                     ))}
@@ -223,7 +241,7 @@ const WeatherCharts: React.FC<WeatherChartsProps> = ({
           </CardHeader>
           <CardContent className="p-6">
             <ChartContainer config={chartConfig}>
-              <ResponsiveContainer width="100%" height={300}>
+              <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
                   <Pie
                     data={mockRiskData}
@@ -235,6 +253,7 @@ const WeatherCharts: React.FC<WeatherChartsProps> = ({
                     nameKey="category"
                     stroke="hsl(var(--background))"
                     strokeWidth={3}
+                    data-testid="pie-risk"
                   >
                     {mockRiskData.map((entry, index) => (
                       <Cell 
@@ -246,7 +265,7 @@ const WeatherCharts: React.FC<WeatherChartsProps> = ({
                   </Pie>
                   <ChartTooltip 
                     content={<ChartTooltipContent />}
-                    formatter={(value: any, name: any) => [`${value}%`, name]}
+                    formatter={(value: number, name: string) => [`${value}%`, name]}
                   />
                   <Legend 
                     verticalAlign="bottom" 
@@ -268,14 +287,16 @@ const WeatherCharts: React.FC<WeatherChartsProps> = ({
             Hot Days Probability Trend Analysis
           </CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
+  <CardContent className="p-3 max-h-[900px]">
           <ChartContainer config={chartConfig}>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={mockTrendData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            {/* Reduced height and margins to make card more compact */}
+            <ResponsiveContainer width="100%" height={240}>
+              <AreaChart data={mockTrendData} margin={{ top: 6, right: 12, left: 6, bottom: 6 }}>
                 <defs>
                   <linearGradient id="probabilityGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="hsl(var(--chart-purple))" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="hsl(var(--chart-purple))" stopOpacity={0.1}/>
+                    {/* Updated gradient to green spectrum for visual consistency with trend icon */}
+                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.45} />
+                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0.08} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" className="opacity-30" />
@@ -296,21 +317,21 @@ const WeatherCharts: React.FC<WeatherChartsProps> = ({
                 />
                 <ChartTooltip 
                   content={<ChartTooltipContent />}
-                  formatter={(value: any) => [`${Math.round(value * 100)}%`, 'Probability']}
+                  formatter={(value: number) => [`${Math.round(value * 100)}%`, 'Probability']}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="probability" 
-                  stroke="hsl(var(--chart-purple))" 
+                  stroke="#16a34a" 
                   fill="url(#probabilityGradient)"
-                  strokeWidth={3}
-                  dot={{ fill: 'hsl(var(--chart-purple))', strokeWidth: 2, r: 4 }}
-                  activeDot={{ r: 6, stroke: 'hsl(var(--chart-purple))', strokeWidth: 2, fill: 'hsl(var(--background))' }}
+                  strokeWidth={2}
+                  dot={{ fill: '#16a34a', strokeWidth: 1, r: 3 }}
+                  activeDot={{ r: 5, stroke: '#16a34a', strokeWidth: 1, fill: 'hsl(var(--background))' }}
                 />
               </AreaChart>
             </ResponsiveContainer>
           </ChartContainer>
-          <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground">
+          <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
             <span>📊 Statistical significance: p &lt; 0.001 (highly significant)</span>
             <span>📈 Trend: +5.1% per decade increase</span>
           </div>
