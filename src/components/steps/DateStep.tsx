@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Calendar, Clock, CheckCircle } from 'lucide-react';
+import { DatePicker } from '@/components/DatePicker';
 
 interface AnalysisConfig {
   date: string;
@@ -21,7 +22,7 @@ const DateStep: React.FC<DateStepProps> = ({
   selectedDate,
   selectedTimeWindow
 }) => {
-  const [date, setDate] = useState(selectedDate || '');
+  const [date, setDate] = useState<Date | undefined>(selectedDate ? new Date(selectedDate) : undefined);
   const [daysBefore, setDaysBefore] = useState(selectedTimeWindow?.days_before?.toString() || '3');
   const [daysAfter, setDaysAfter] = useState(selectedTimeWindow?.days_after?.toString() || '3');
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -33,7 +34,7 @@ const DateStep: React.FC<DateStepProps> = ({
   const handleSubmit = () => {
     if (date) {
       const config: AnalysisConfig = {
-        date,
+        date: date.toISOString().split('T')[0],
         timeWindow: {
           days_before: parseInt(daysBefore) || 0,
           days_after: parseInt(daysAfter) || 0
@@ -52,23 +53,22 @@ const DateStep: React.FC<DateStepProps> = ({
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
+      <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+        <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10 border-b border-border/50">
+          <CardTitle className="flex items-center gap-2 text-card-foreground">
+            <Calendar className="h-5 w-5 text-primary" />
             Select Target Date
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="date" className="text-sm font-medium">
+        <CardContent className="space-y-4 pt-6">
+          <div className="space-y-3">
+            <Label htmlFor="date" className="text-sm font-medium text-card-foreground">
               When do you want to analyze the weather?
             </Label>
-            <Input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
+            <DatePicker
+              date={date}
+              onDateChange={setDate}
+              placeholder="Choose any date to analyze"
               className="text-lg"
             />
             <p className="text-xs text-muted-foreground">
@@ -78,16 +78,16 @@ const DateStep: React.FC<DateStepProps> = ({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="h-5 w-5" />
+      <Card className="bg-card/50 backdrop-blur-sm border-border/50">
+        <CardHeader className="bg-gradient-to-r from-accent/10 to-primary/10 border-b border-border/50">
+          <CardTitle className="flex items-center gap-2 text-card-foreground">
+            <Clock className="h-5 w-5 text-accent" />
             Analysis Time Window
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-3">
-            <Label className="text-sm font-medium">
+        <CardContent className="space-y-4 pt-6">
+          <div className="space-y-4">
+            <Label className="text-sm font-medium text-card-foreground">
               How many days around your target date should we analyze?
             </Label>
             
@@ -104,7 +104,7 @@ const DateStep: React.FC<DateStepProps> = ({
                   type="number"
                   min="0"
                   max="30"
-                  className="text-center"
+                  className="text-center bg-input/50 border-border/50 focus:bg-input focus:border-border"
                 />
               </div>
               
@@ -125,13 +125,13 @@ const DateStep: React.FC<DateStepProps> = ({
                   type="number"
                   min="0"
                   max="30"
-                  className="text-center"
+                  className="text-center bg-input/50 border-border/50 focus:bg-input focus:border-border"
                 />
               </div>
             </div>
             
-            <div className="p-3 bg-secondary rounded-lg text-center">
-              <p className="text-sm font-medium">
+            <div className="p-4 bg-secondary/50 rounded-lg text-center border border-border/30">
+              <p className="text-sm font-medium text-secondary-foreground">
                 Total Analysis Period: {getTotalDays()} days
               </p>
               <p className="text-xs text-muted-foreground">
@@ -143,7 +143,7 @@ const DateStep: React.FC<DateStepProps> = ({
           <Button 
             onClick={handleSubmit} 
             disabled={!date} 
-            className="w-full"
+            className="w-full bg-primary/90 hover:bg-primary text-primary-foreground"
             size="lg"
           >
             Set Date & Time Window
@@ -153,14 +153,14 @@ const DateStep: React.FC<DateStepProps> = ({
 
       {/* Confirmation Display */}
       {isSubmitted && (
-        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+        <Card className="border-primary/30 bg-gradient-to-br from-primary/10 to-transparent backdrop-blur-sm">
           <CardContent className="pt-6">
             <div className="flex items-start gap-3">
               <CheckCircle className="h-5 w-5 text-primary mt-0.5" />
               <div className="space-y-1">
-                <p className="font-medium">Date & Time Window Set</p>
+                <p className="font-medium text-card-foreground">Date & Time Window Set</p>
                 <p className="text-sm text-muted-foreground">
-                  Target Date: {new Date(date).toLocaleDateString()}
+                  Target Date: {date?.toLocaleDateString()}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Analysis Window: {daysBefore} days before, {daysAfter} days after

@@ -58,6 +58,11 @@ export default {
           "3": "var(--chart-3)",
           "4": "var(--chart-4)",
           "5": "var(--chart-5)",
+          green: "var(--chart-green)",
+          purple: "var(--chart-purple)",
+          pink: "var(--chart-pink)",
+          blue: "var(--chart-blue)",
+          gray: "var(--chart-gray)",
         },
         sidebar: {
           DEFAULT: "var(--sidebar-background)",
